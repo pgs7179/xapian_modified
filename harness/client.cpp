@@ -52,6 +52,10 @@ Client::Client(int _nthreads) {
     seed = getOpt("TBENCH_RANDSEED", 0);
     lambda = getOpt<double>("TBENCH_QPS", 1000.0) * 1e-9;
 
+    //gspark
+    sleepNs = getOpt<uint64_t>("SLEEP_NS", 0);
+    burstNs = getOpt<uint64_t>("BURST_NS", 0);
+
     dist = nullptr; // Will get initialized in startReq()
 
     startedReqs = 0;
@@ -67,7 +71,7 @@ Request* Client::startReq() {
 
         if (!dist) {
             uint64_t curNs = getCurNs();
-            dist = new ExpDist(lambda, seed, curNs);
+            dist = new ExpDist(lambda, seed, curNs, sleepNs, burstNs);
 
             status = WARMUP;
 
@@ -95,6 +99,7 @@ Request* Client::startReq() {
     uint64_t curNs = getCurNs();
 
     if (curNs < req->genNs) {
+        //std::cout << "sleep time: " <<std::max(req->genNs, curNs + minSleepNs) <<std::endl;
         sleepUntil(std::max(req->genNs, curNs + minSleepNs));
     }
 

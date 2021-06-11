@@ -31,13 +31,26 @@ class ExpDist : public Dist {
         std::default_random_engine g;
         std::exponential_distribution<double> d;
         uint64_t curNs;
+        uint64_t nextSleepNs; 
+        uint64_t sleepNs;
+        uint64_t burstNs;
 
     public:
-        ExpDist(double lambda, uint64_t seed, uint64_t startNs) 
-            : g(seed), d(lambda), curNs(startNs) {}
+        ExpDist(double lambda, uint64_t seed, uint64_t startNs, uint64_t sleepNs, uint64_t burstNs) 
+            : g(seed), d(lambda), curNs(startNs),nextSleepNs(startNs + burstNs), sleepNs(sleepNs), burstNs(burstNs) {}
 
         uint64_t nextArrivalNs() {
             curNs += d(g);
+
+            //gspark
+            if(burstNs != 0 && sleepNs != 0)
+                if( curNs > nextSleepNs )
+                {
+                    curNs += sleepNs;
+                    nextSleepNs = curNs + burstNs;
+                    //std::cout << "next sleep time: " << nextSleepNs << std::endl;
+                }
+
             return curNs;
         }
 };

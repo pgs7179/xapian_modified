@@ -43,6 +43,12 @@ class Client {
         double lambda;
         ExpDist* dist;
 
+        //gspark
+        uint64_t nextSleepNs; 
+        uint64_t sleepNs;
+        uint64_t burstNs;
+
+
         uint64_t startedReqs;
         std::unordered_map<uint64_t, Request*> inFlightReqs;
 
